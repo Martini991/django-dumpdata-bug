@@ -3,19 +3,13 @@ from django.db import models
 from parent_app import models as parent_app_models
 
 
-def get_field_base_manager(queryset, *, field_name):
-    field_model = getattr(queryset.model, field_name).field.model
-    return field_model._base_manager
-
-
 class UserManager(DjangoUserManager):
+    use_in_migrations = False
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        queryset = queryset.prefetch_related(models.Prefetch(
-            'items',
-            queryset=get_field_base_manager(queryset, field_name='items').only('id', 'description')
-        ))
+        queryset = queryset.prefetch_related(models.Prefetch('items', queryset=Item.objects.all()))
 
         return queryset
 
